@@ -1,77 +1,43 @@
-import React, {useState, useEffect} from "react";
+import React, {useEffect} from "react";
 import right_panel_image from "../../assets/images/userpanel.png";
 import "./LoginPage.scss";
+import { useForm } from 'react-hook-form'
 
 export default function LoginPage(){
-    const document_title = "Log In";
-    const [formData, setFormData] = useState({email:"", password:""});
-    const [errors, setErrors] = useState({});
-    const [isSubmit, setIsSubmit] = useState(false);
+    useEffect(()=>{document.title = "Log In"},[]);
+    const { register, handleSubmit, formState: { errors }} = useForm();
     const user = {
         email:"testemail@gmail.com",
-        password:"password"
+        password:"qwerty12321"
     }
-    const isErrorInput={
-        email: errors.email ? "error_input" : "",
-        password: errors.password ? "error_input" : ""
-    }
-    const handleInputChange = (event) =>{
-        const {name, value} = event.target;
-        setFormData((formData)=>({
-            ...formData,
-            [name]:value,
-        }));
-    };
-
-    const validateForm = () => {
-        const newErrors = {};
-        const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if(!formData.email){
-            newErrors.email = "Email is required.";
-        }
-        else if(!isEmailValid.test(formData.email)){
-            newErrors.email = "Please enter a valid Email.";
-        }
-        else if (formData.email !==user.email){
-            newErrors.email = "The email you entered isn't connected to an account.";
-        }
-
-        if(!formData.password){
-            newErrors.password = "Password is required.";
-        }
-        else if(formData.password !== user.password){
-            newErrors.password = "Incorrect Password.";
-        }
-        setErrors(newErrors);
-        return newErrors;
-    }
-    const handleSubmit = (event) =>{
-        event.preventDefault();
-        setIsSubmit(true);
-        validateForm();
+    const onSubmit = data => {
+        console.log(data);
+        window.location.href = "/dashboard";
     }
 
-    useEffect(()=>{
-        if(Object.keys(errors).length === 0 && isSubmit){
-            window.location.href = "/dashboard";
-        }
-    });
-    useEffect(()=>{document.title = document_title},[]);
     return(
         <main>
             <div className="container">
                 <div className="login">
-                    <form action="POST" onSubmit={handleSubmit}>
+                    <form onSubmit={handleSubmit(onSubmit)}>
                         <h1>The Wall</h1>
                         <h2>Log In</h2>
-                        <label>Email</label>
-                        <input tabIndex="1" type="text" name="email" className={isErrorInput.email} value={formData.email} onChange={handleInputChange}/>
-                        <p className="error_text">{errors.email}</p>
-                        <label>Password
+                        <label htmlFor="email">Email</label>
+                        <input {...register('email',    {required: "Email is required",
+                                                        pattern: {value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i,message: "Invalid email address"},
+                                                        validate: value => value === user.email || "The email you entered isn't connected to an account.",
+                                                        })} type="text" className={errors.email ? "error_input" : ""} tabIndex="1"/>
+                        {errors.email && <p className="error_text">{errors.email.message}</p>}
+                        <label htmlFor="email">Password
                             <a href="/">Forgot Password ?</a>
                         </label>
-                        <input tabIndex="2" type="password" name="password" className={isErrorInput.password} value={formData.password} onChange={handleInputChange}/>
-                        <p className="error_text">{errors.password}</p>
+                        <input {...register('password',{required: "Password is required",
+                                                        minLength: {value: 8,message: "Password must have at least 8 characters"},
+                                                        validate: value => value === user.password || "Incorrect Password.",
+                                                        })} type="password" className={errors.password ? "error_input" : ""} tabIndex="2"/>
+
+                        {errors.password && <p className="error_text">{errors.password.message}</p>}
+
                         <button tabIndex="3" type="submit">SIGN IN</button>
                         <p className="is_registered">I don't have an account ? <a tabIndex="4" href="/sign-up">Sign Up</a></p>
                     </form>
